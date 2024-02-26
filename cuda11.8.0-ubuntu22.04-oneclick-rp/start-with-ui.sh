@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Starting: Ooobabooga's text-generation-webui. Container provided by TheBloke."
+echo "TheBloke's Local LLMs: Pod started"
 
 SCRIPTDIR=/root/scripts
 VOLUME=/workspace
@@ -36,13 +36,12 @@ fi
 # Update text-generation-webui to the latest commit
 cd /workspace/text-generation-webui && git pull
 
-# Update exllama to the latest commit
-cd /workspace/text-generation-webui/repositories/exllama && git pull
-
 # Move the script that launches text-gen to $VOLUME, so users can make persistent changes to CLI arguments
 if [[ ! -f $VOLUME/run-text-generation-webui.sh ]]; then
 	mv "$SCRIPTDIR"/run-text-generation-webui.sh $VOLUME/run-text-generation-webui.sh
 fi
+
+python3 /root/scripts/rp_handler.py >/workspace/logs/rp_handler.log 2>&1 &
 
 ARGS=()
 while true; do
@@ -60,9 +59,7 @@ while true; do
 			ARGS=("${ARGS[@]}" ${UI_ARGS})
 		fi
 
-		# Run text-generation-webui and log it.
-		# tee is used for logs so they also display on 'screen', ie will show in the Runpod log viewer
-		($VOLUME/run-text-generation-webui.sh "${ARGS[@]}" 2>&1) | tee -a $VOLUME/logs/text-generation-webui.log
+		($VOLUME/run-text-generation-webui.sh "${ARGS[@]}" 2>&1) >>$VOLUME/logs/text-generation-webui.log
 
 	fi
 	sleep 2
